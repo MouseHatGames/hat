@@ -1,0 +1,23 @@
+syntax = "proto3";
+option go_package = "github.com/MouseHatGames/hat/proto";
+
+service Hat {
+    rpc Set(SetRequest) returns (Data) {}
+    rpc Get(Path) returns (Data) {}
+    rpc Delete(Path) returns (Empty) {}
+}
+
+message Data {
+    string json = 1;
+}
+
+message Path {
+    repeated string parts = 1;
+}
+
+message Empty {}
+
+message SetRequest {
+    Path path = 1;
+    Data value = 2;
+}
