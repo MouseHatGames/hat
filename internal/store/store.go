@@ -15,8 +15,8 @@ type Path interface {
 type Store interface {
 	io.Closer
 
-	Get(p Path) ([]byte, error)
-	Set(p Path, v []byte) error
+	Get(p Path) (string, error)
+	Set(p Path, v string) error
 	Del(p Path) error
 }
 

@@ -34,7 +34,7 @@ func (s *boltStore) Close() error {
 	return s.db.Close()
 }
 
-func (s *boltStore) Get(p Path) ([]byte, error) {
+func (s *boltStore) Get(p Path) (string, error) {
 	var value []byte
 
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -45,17 +45,21 @@ func (s *boltStore) Get(p Path) ([]byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return value, nil
+	if value == nil {
+		return "", ErrKeyNotFound
+	}
+
+	return string(value), nil
 }
 
-func (s *boltStore) Set(p Path, v []byte) error {
+func (s *boltStore) Set(p Path, v string) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bucket)
 
-		return b.Put(joinPath(p), v)
+		return b.Put(joinPath(p), []byte(v))
 	})
 }
 

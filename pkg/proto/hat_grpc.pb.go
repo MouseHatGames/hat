@@ -17,8 +17,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HatClient interface {
-	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Data, error)
 	Get(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Data, error)
+	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Empty, error)
 	Delete(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Empty, error)
 }
 
@@ -30,18 +30,18 @@ func NewHatClient(cc grpc.ClientConnInterface) HatClient {
 	return &hatClient{cc}
 }
 
-func (c *hatClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Data, error) {
+func (c *hatClient) Get(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Data, error) {
 	out := new(Data)
-	err := c.cc.Invoke(ctx, "/Hat/Set", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/Hat/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hatClient) Get(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Data, error) {
-	out := new(Data)
-	err := c.cc.Invoke(ctx, "/Hat/Get", in, out, opts...)
+func (c *hatClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/Hat/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +61,8 @@ func (c *hatClient) Delete(ctx context.Context, in *Path, opts ...grpc.CallOptio
 // All implementations must embed UnimplementedHatServer
 // for forward compatibility
 type HatServer interface {
-	Set(context.Context, *SetRequest) (*Data, error)
 	Get(context.Context, *Path) (*Data, error)
+	Set(context.Context, *SetRequest) (*Empty, error)
 	Delete(context.Context, *Path) (*Empty, error)
 	mustEmbedUnimplementedHatServer()
 }
@@ -71,11 +71,11 @@ type HatServer interface {
 type UnimplementedHatServer struct {
 }
 
-func (UnimplementedHatServer) Set(context.Context, *SetRequest) (*Data, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
-}
 func (UnimplementedHatServer) Get(context.Context, *Path) (*Data, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedHatServer) Set(context.Context, *SetRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
 func (UnimplementedHatServer) Delete(context.Context, *Path) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -93,24 +93,6 @@ func RegisterHatServer(s grpc.ServiceRegistrar, srv HatServer) {
 	s.RegisterService(&_Hat_serviceDesc, srv)
 }
 
-func _Hat_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HatServer).Set(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Hat/Set",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HatServer).Set(ctx, req.(*SetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Hat_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Path)
 	if err := dec(in); err != nil {
@@ -125,6 +107,24 @@ func _Hat_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HatServer).Get(ctx, req.(*Path))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hat_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HatServer).Set(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Hat/Set",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HatServer).Set(ctx, req.(*SetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -152,12 +152,12 @@ var _Hat_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*HatServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Set",
-			Handler:    _Hat_Set_Handler,
-		},
-		{
 			MethodName: "Get",
 			Handler:    _Hat_Get_Handler,
+		},
+		{
+			MethodName: "Set",
+			Handler:    _Hat_Set_Handler,
 		},
 		{
 			MethodName: "Delete",
