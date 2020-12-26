@@ -3,7 +3,7 @@ package store
 import (
 	"testing"
 
-	"github.com/MouseHatGames/hat/pkg/proto"
+	"github.com/MouseHatGames/hat/internal/proto"
 	"github.com/stretchr/testify/assert"
 )
 

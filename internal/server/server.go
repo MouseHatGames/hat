@@ -7,8 +7,8 @@ import (
 	"net"
 
 	"github.com/MouseHatGames/hat/internal/config"
+	"github.com/MouseHatGames/hat/internal/proto"
 	"github.com/MouseHatGames/hat/internal/store"
-	"github.com/MouseHatGames/hat/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
