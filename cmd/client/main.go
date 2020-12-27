@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/MouseHatGames/hat/pkg/client"
 	"github.com/alecthomas/kong"
 )
@@ -14,7 +17,7 @@ type CLI struct {
 
 	Get GetCmd `cmd help:"Fetches a value by its path and prints it JSON-encoded"`
 	Set SetCmd `cmd help:"Sets a key's JSON-encoded value"`
-	Del DelCmd `cmd help:"Deletes a key"`
+	Del DelCmd `cmd help:"Deletes a key. Does not fail if the key doesn't exist"`
 }
 
 func (v *Globals) AfterApply(ctx *kong.Context) error {
@@ -39,4 +42,6 @@ func main() {
 
 	err := ctx.Run(&cli.Globals)
 	ctx.FatalIfErrorf(err)
+
+	fmt.Fprintln(os.Stderr, "OK")
 }

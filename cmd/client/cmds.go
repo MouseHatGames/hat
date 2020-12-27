@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/MouseHatGames/hat/pkg/client"
@@ -31,7 +30,6 @@ func (c *GetCmd) Run(cl client.Client) error {
 	}
 
 	fmt.Println(val.Raw())
-	fmt.Fprintln(os.Stderr, "OK")
 	return nil
 }
 
@@ -50,7 +48,6 @@ func (c *SetCmd) Run(cl client.Client) error {
 		return ErrInvalidJson
 	}
 
-	fmt.Fprintln(os.Stderr, "OK")
 	return nil
 }
 
@@ -64,6 +61,5 @@ func (c *DelCmd) Run(cl client.Client) error {
 		return err
 	}
 
-	fmt.Fprintln(os.Stderr, "OK")
 	return nil
 }
