@@ -18,7 +18,7 @@ type Client interface {
 }
 
 func Dial(addr string) (Client, error) {
-	conn, err := grpc.Dial(addr)
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		return nil, fmt.Errorf("dial: %w", err)
 	}
