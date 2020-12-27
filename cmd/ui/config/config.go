@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	Endpoint   string                      `yaml:"endpoint"`
 	WidgetRows []map[string]*widget.Widget `yaml:"widgets"`
 }
 
@@ -23,7 +24,9 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("read file: %w", err)
 	}
 
-	var cfg Config
+	cfg := Config{
+		Endpoint: "127.0.0.1:4659",
+	}
 
 	if err := yaml.Unmarshal(f, &cfg); err != nil {
 		return nil, fmt.Errorf("parse yaml: %w", err)
