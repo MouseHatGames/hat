@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,12 +13,19 @@ type Config struct {
 }
 
 func LoadConfig(path string) (*Config, error) {
+	cfg := Config{
+		Port: 4659,
+	}
+
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return &cfg, nil
+		}
+
 		return nil, fmt.Errorf("read file: %w", err)
 	}
 
-	var cfg Config
 	if err := yaml.Unmarshal(file, &cfg); err != nil {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
