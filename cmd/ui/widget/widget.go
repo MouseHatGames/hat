@@ -1,6 +1,18 @@
 package widget
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+)
+
+var (
+	ErrMissingTitle    = errors.New("missing title")
+	ErrInvalidOptions  = errors.New("invalid options")
+	ErrMissingChildren = errors.New("missing group children")
+	ErrMissingOptions  = errors.New("missing options")
+	ErrUnknownType     = errors.New("unknown type")
+	ErrInvalidType     = errors.New("invalid type")
+)
 
 type WidgetType string
 
@@ -11,19 +23,10 @@ const (
 	WidgetOptions WidgetType = "options"
 )
 
-var (
-	ErrMissingTitle    = errors.New("missing title")
-	ErrInvalidOptions  = errors.New("invalid options")
-	ErrMissingChildren = errors.New("missing group children")
-	ErrMissingOptions  = errors.New("missing options")
-	ErrUnknownType     = errors.New("unknown type")
-)
-
 type Widget struct {
-	Title       string      `json:"title" yaml:"title"`
-	Type        WidgetType  `json:"type" yaml:"type"`
-	Description string      `json:"description,omitempty" yaml:"description"`
-	Value       interface{} `json:"value" yaml:"-"`
+	Title       string     `json:"title" yaml:"title"`
+	Type        WidgetType `json:"type" yaml:"type"`
+	Description string     `json:"description,omitempty" yaml:"description"`
 
 	// Text widget
 	Placeholder string `json:"placeholder,omitempty" yaml:"placeholder"`
@@ -33,7 +36,8 @@ type Widget struct {
 	Children []*Widget `json:"children,omitempty" yaml:"children"`
 
 	// Options widget
-	Options []string `json:"options,omitempty" yaml:"options"`
+	Options    []string `json:"options,omitempty" yaml:"options"`
+	StoreIndex bool     `json:"-" yaml:"storeIndex"`
 }
 
 func (w *Widget) IsValid() (valid bool, reason error) {
@@ -73,4 +77,36 @@ func (w *Widget) IsValid() (valid bool, reason error) {
 	}
 
 	return true, nil
+}
+
+func (w *Widget) UnmarshalValue(str string) (value interface{}, err error) {
+	b := []byte(str)
+
+	switch w.Type {
+	case WidgetOnOff:
+		var on bool
+		err = json.Unmarshal(b, &on)
+		value = on
+
+	case WidgetText:
+		var str string
+		err = json.Unmarshal(b, &str)
+		value = str
+
+	case WidgetOptions:
+		if w.StoreIndex {
+			var idx int
+			err = json.Unmarshal(b, &idx)
+			value = idx
+		} else {
+			var sel string
+			err = json.Unmarshal(b, &sel)
+			value = sel
+		}
+
+	default:
+		err = ErrInvalidOptions
+	}
+
+	return
 }

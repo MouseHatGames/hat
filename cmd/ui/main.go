@@ -6,6 +6,8 @@ import (
 	"log"
 
 	"github.com/MouseHatGames/hat-ui/config"
+	"github.com/MouseHatGames/hat-ui/widget"
+	"github.com/MouseHatGames/hat/pkg/client"
 	"github.com/kataras/iris/v12"
 )
 
@@ -15,20 +17,40 @@ func main() {
 		log.Fatalf("failed to load configuration: %s", err)
 	}
 
-	hat, err := 
+	hat, err := client.Dial(cfg.Endpoint)
+	if err != nil {
+		log.Fatalf("failed to connect to server: %s", err)
+	}
 
 	app := iris.New()
-	app.Get("/api/widgets", func(ctx iris.Context) {
-		ctx.JSON(cfg.WidgetRows)
-	})
 	app.Get("/api/data", func(ctx iris.Context) {
-		data := make(map[string]interface{})
+		resp := &struct {
+			Widgets []map[string]*widget.Widget `json:"widgets"`
+			Data    map[string]interface{}      `json:"data"`
+		}{
+			Widgets: cfg.WidgetRows,
+			Data:    make(map[string]interface{}),
+		}
 
 		for _, row := range cfg.WidgetRows {
 			for path, w := range row {
-				
+				clvalue := hat.Get(client.SplitPath(path)...)
+				if err := clvalue.Error(); err != nil {
+					//TODO Handle error
+					continue
+				}
+
+				value, err := w.UnmarshalValue(clvalue.Raw())
+				if err != nil {
+					//TODO Handle error
+					continue
+				}
+
+				resp.Data[path] = value
 			}
 		}
+
+		ctx.JSON(resp)
 	})
 
 	app.HandleDir("/", "./dist", iris.DirOptions{

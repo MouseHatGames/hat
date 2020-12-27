@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/MouseHatGames/hat/internal/proto"
 	"google.golang.org/grpc"
@@ -13,6 +14,7 @@ type Client interface {
 	io.Closer
 
 	Get(path ...string) Value
+	GetBulk(paths [][]string) ([]Value, error)
 	Set(val string, path ...string) error
 	Del(path ...string) error
 }
@@ -27,6 +29,11 @@ func Dial(addr string) (Client, error) {
 		conn: conn,
 		cl:   proto.NewHatClient(conn),
 	}, nil
+}
+
+// SplitPath splits a path (i.e. foo.bar.test) into its parts (i.e. ["foo", "bar", "test"])
+func SplitPath(path string) []string {
+	return strings.Split(path, ".")
 }
 
 type client struct {
@@ -44,6 +51,28 @@ func (c *client) Get(path ...string) Value {
 		return &jsonValue{err: err}
 	}
 	return &jsonValue{val: d.Json}
+}
+
+func (c *client) GetBulk(paths [][]string) ([]Value, error) {
+	req := proto.BulkRequest{
+		Paths: make([]*proto.Path, len(paths)),
+	}
+
+	for i, p := range paths {
+		req.Paths[i] = &proto.Path{Parts: p}
+	}
+
+	resp, err := c.cl.GetBulk(context.Background(), &req)
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]Value, len(resp.Data))
+	for i, v := range resp.Data {
+		values[i] = &jsonValue{val: v.Json}
+	}
+
+	return values, nil
 }
 
 func (c *client) Set(val string, path ...string) error {
