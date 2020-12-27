@@ -1,0 +1,11 @@
+@import "node_modules/bulmaswatch/cyborg/_variables";
+@import "node_modules/bulma/bulma";
+@import "node_modules/bulmaswatch/cyborg/_overrides";
+
+.card {
+    background-color: #141619;
+
+    .card-header {
+        background-color: rgba(#101215, .7);
+    }
+}
