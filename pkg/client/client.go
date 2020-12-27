@@ -1,4 +1,4 @@
-package hat
+package client
 
 import (
 	"context"
