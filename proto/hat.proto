@@ -3,6 +3,7 @@ option go_package = "github.com/MouseHatGames/hat/proto";
 
 service Hat {
     rpc Get(Path) returns (Data) {}
+    rpc GetBulk(BulkRequest) returns (BulkResponse) {}
     rpc Set(SetRequest) returns (Empty) {}
     rpc Delete(Path) returns (Empty) {}
 }
@@ -20,4 +21,12 @@ message Empty {}
 message SetRequest {
     Path path = 1;
     Data value = 2;
+}
+
+message BulkRequest {
+	repeated Path paths = 1;
+}
+
+message BulkResponse {
+	repeated Data data = 1;
 }

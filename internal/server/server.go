@@ -60,6 +60,31 @@ func (s *hatServer) Get(ctx context.Context, req *proto.Path) (*proto.Data, erro
 	return &proto.Data{Json: val}, nil
 }
 
+func (s *hatServer) GetBulk(ctx context.Context, req *proto.BulkRequest) (*proto.BulkResponse, error) {
+	paths := make([]store.Path, len(req.Paths))
+	for i, v := range req.Paths {
+		paths[i] = v
+	}
+
+	values, err := s.store.GetBulk(paths)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &proto.BulkResponse{
+		Data: make([]*proto.Data, len(values)),
+	}
+	for i, v := range values {
+		if v != nil {
+			resp.Data[i] = &proto.Data{
+				Json: *v,
+			}
+		}
+	}
+
+	return resp, nil
+}
+
 func (s *hatServer) Delete(ctx context.Context, req *proto.Path) (*proto.Empty, error) {
 	if err := s.store.Del(req); err != nil {
 		return nil, err

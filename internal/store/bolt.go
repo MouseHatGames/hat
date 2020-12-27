@@ -55,6 +55,30 @@ func (s *boltStore) Get(p Path) (string, error) {
 	return string(value), nil
 }
 
+func (s *boltStore) GetBulk(p []Path) ([]*string, error) {
+	values := make([]*string, len(p))
+
+	err := s.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(s.bucket)
+
+		for i, path := range p {
+			data := b.Get(joinPath(path))
+
+			if data != nil {
+				s := string(data)
+				values[i] = &s
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return values, nil
+}
+
 func (s *boltStore) Set(p Path, v string) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bucket)
