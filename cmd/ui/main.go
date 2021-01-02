@@ -13,10 +13,20 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load("config.yaml")
+	cfgChan := make(chan *config.Config, 1)
+
+	err := config.Load("config.yaml", cfgChan)
 	if err != nil {
 		log.Fatalf("failed to load configuration: %s", err)
 	}
+
+	cfg := <-cfgChan
+	go func() {
+		for c := range cfgChan {
+			log.Print("reloaded config")
+			cfg = c
+		}
+	}()
 
 	hat, err := client.Dial(cfg.Endpoint)
 	if err != nil {

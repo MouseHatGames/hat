@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/boltdb/bolt v1.3.1
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/stretchr/testify v1.6.1
 	google.golang.org/grpc v1.34.0

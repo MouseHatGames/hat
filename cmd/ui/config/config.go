@@ -3,16 +3,19 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"sort"
 
 	"github.com/MouseHatGames/hat-ui/widget"
+	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	Endpoint    string                    `yaml:"endpoint"`
+	Watch       bool                      `yaml:"watch"`
 	WidgetsNode yaml.Node                 `yaml:"widgets"`
 	Widgets     map[string]*widget.Widget `yaml:"-"`
 
@@ -23,7 +26,36 @@ type Config struct {
 
 var paramRegex = regexp.MustCompile("{(.*?)}")
 
-func Load(path string) (*Config, error) {
+func Load(path string, out chan<- *Config) error {
+	cfg, err := readFrom(path)
+	if err != nil {
+		return err
+	}
+
+	out <- cfg
+
+	if cfg.Watch {
+		go watch(path, out)
+	}
+
+	return nil
+}
+
+func (c *Config) OrderedWidgets() []*widget.Widget {
+	all := make([]*widget.Widget, 0, len(c.Widgets))
+
+	for _, w := range c.Widgets {
+		all = append(all, w)
+	}
+
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].Index < all[j].Index
+	})
+
+	return all
+}
+
+func readFrom(path string) (*Config, error) {
 	f, err := ioutil.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -48,6 +80,41 @@ func Load(path string) (*Config, error) {
 	}
 
 	return &cfg, nil
+}
+
+func watch(path string, out chan<- *Config) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatalf("failed to start config watcher: %s", err)
+	}
+	defer watcher.Close()
+
+	watcher.Add(path)
+
+	log.Print("watching configuration file for changes")
+
+	for {
+		select {
+		case ev, ok := <-watcher.Events:
+			if !ok {
+				return
+			}
+
+			if ev.Op&fsnotify.Write == fsnotify.Write {
+				cfg, err := readFrom(path)
+				if err != nil {
+					log.Printf("failed to reload configuration: %s", err)
+				} else {
+					out <- cfg
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+			log.Printf("watcher error: %s", err)
+		}
+	}
 }
 
 func parseWidgets(node yaml.Node) (map[string]*widget.Widget, error) {
@@ -77,18 +144,4 @@ func parseWidgets(node yaml.Node) (map[string]*widget.Widget, error) {
 	}
 
 	return widgets, nil
-}
-
-func (c *Config) OrderedWidgets() []*widget.Widget {
-	all := make([]*widget.Widget, 0, len(c.Widgets))
-
-	for _, w := range c.Widgets {
-		all = append(all, w)
-	}
-
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].Index < all[j].Index
-	})
-
-	return all
 }
