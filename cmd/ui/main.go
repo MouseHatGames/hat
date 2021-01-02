@@ -42,7 +42,7 @@ func main() {
 				continue
 			}
 
-			value, err := w.UnmarshalValue(clvalue.Raw())
+			value, err := w.UnmarshalValue([]byte(clvalue.Raw()))
 			if err != nil {
 				//TODO Handle error
 				continue
@@ -61,13 +61,25 @@ func main() {
 			return
 		}
 
+		widget, ok := cfg.Widgets[path]
+		if !ok {
+			ctx.StatusCode(iris.StatusBadRequest)
+			return
+		}
+
 		var value interface{}
 		if err := json.Unmarshal(body, &value); err != nil {
 			ctx.StatusCode(iris.StatusBadRequest)
 			return
 		}
 
-		if err := hat.Set(string(body), client.SplitPath(path)...); err != nil {
+		mval, err := widget.MarshalValue(value)
+		if err != nil {
+			ctx.StatusCode(iris.StatusBadRequest)
+			return
+		}
+
+		if err := hat.Set(string(mval), client.SplitPath(path)...); err != nil {
 			ctx.StatusCode(iris.StatusInternalServerError)
 			log.Printf("failed to set value: %s", err)
 		}

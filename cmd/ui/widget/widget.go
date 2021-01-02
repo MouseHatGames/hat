@@ -128,29 +128,33 @@ func (w *Widget) isValid() (reason error) {
 	return nil
 }
 
-func (w *Widget) UnmarshalValue(str string) (value interface{}, err error) {
-	b := []byte(str)
-
+func (w *Widget) UnmarshalValue(jsonval []byte) (value interface{}, err error) {
 	switch w.Type {
 	case WidgetOnOff:
 		var on bool
-		err = json.Unmarshal(b, &on)
+		err = json.Unmarshal(jsonval, &on)
 		value = on
 
 	case WidgetText:
 		var str string
-		err = json.Unmarshal(b, &str)
+		err = json.Unmarshal(jsonval, &str)
 		value = str
 
 	case WidgetOptions:
 		if w.StoreIndex {
 			var idx int
-			err = json.Unmarshal(b, &idx)
+			err = json.Unmarshal(jsonval, &idx)
 			value = idx
 		} else {
 			var sel string
-			err = json.Unmarshal(b, &sel)
-			value = sel
+			err = json.Unmarshal(jsonval, &sel)
+
+			for i, opt := range w.Options {
+				if opt == sel {
+					value = i
+					break
+				}
+			}
 		}
 
 	default:
@@ -173,14 +177,15 @@ func (w *Widget) MarshalValue(val interface{}) ([]byte, error) {
 		}
 
 	case WidgetOptions:
-		if w.StoreIndex {
-			if v, ok := val.(float64); ok {
-				return json.Marshal(math.Floor(v))
+		var idx int32
+		if v, ok := val.(float64); ok {
+			idx = int32(math.Floor(v))
+
+			if w.StoreIndex {
+				return json.Marshal(idx)
 			}
-		} else {
-			if v, ok := val.(string); ok {
-				return json.Marshal(v)
-			}
+
+			return json.Marshal(w.Options[idx])
 		}
 
 	default:

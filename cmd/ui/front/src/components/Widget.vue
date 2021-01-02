@@ -36,7 +36,7 @@
             //- Few options - addons layout
             .field.has-addons(v-if="widget.options.length < 5")
                 .control(v-for="(opt, i) in widget.options")
-                    button.button(:class="{'is-info': i == widget.value}" @click="setValue(i)") {{opt}}
+                    button.button(:class="{'is-info': i == value}" @click="setValue(i)") {{opt}}
 
             //- Many options - flex layout
             .many.is-flex.is-flex-wrap-wrap.is-justify-content-space-around(v-else)
@@ -53,7 +53,8 @@
 
 <script lang="ts">
 import axios from 'axios'
-import { computed, defineComponent, inject, Ref, ref } from 'vue'
+import { computed, defineComponent, inject, PropType, Ref, ref } from 'vue'
+import { Widget } from '../types/widget'
 import OnOff from "./OnOff.vue"
 
 export default defineComponent({
@@ -61,7 +62,7 @@ export default defineComponent({
         OnOff
     },
     props: {
-        widget: Object,
+        widget: Object as PropType<Widget>,
         path: String,
     },
     setup(props, { emit }) {
