@@ -64,10 +64,10 @@ func parseWidgets(node yaml.Node) (map[string]*widget.Widget, error) {
 				return nil, fmt.Errorf("parse widget '%s': %w", path, err)
 			}
 
-			for _, m := range paramRegex.FindAllStringSubmatch(path, -1) {
-				name := m[1]
-				w.ParamNames = append(w.ParamNames, name)
-			}
+			// for _, m := range paramRegex.FindAllStringSubmatch(path, -1) {
+			// 	name := m[1]
+			// 	w.ParamNames = append(w.ParamNames, name)
+			// }
 
 			w.Index = i
 			w.Path = path
