@@ -1,18 +1,14 @@
 <template lang="pug">
-Suspense
-    template(#default)
-        HelloWorld(msg="Hello Vue 3.0 + Vite")
-    template(#fallback)
-        h1 Loading
+Dashboard
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Dashboard from './components/Dashboard.vue'
 
 export default {
     name: 'App',
     components: {
-        HelloWorld
+        Dashboard
     }
 }
 </script>
