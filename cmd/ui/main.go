@@ -52,6 +52,16 @@ func main() {
 
 		ctx.JSON(resp)
 	})
+	app.Post("/api/widget/:path/value", func(ctx iris.Context) {
+		path := ctx.Params().Get("path")
+		body, err := ctx.GetBody()
+		if err != nil {
+			ctx.StatusCode(iris.StatusBadRequest)
+			return
+		}
+
+		hat.Set(string(body), client.SplitPath(path)...)
+	})
 
 	app.HandleDir("/", "./dist", iris.DirOptions{
 		Asset:      GzipAsset,

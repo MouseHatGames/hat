@@ -33,7 +33,7 @@ type Widget struct {
 	Big         bool   `json:"big,omitempty" yaml:"big"`
 
 	// Group widget
-	Children []*Widget `json:"children,omitempty" yaml:"children"`
+	Children map[string]*Widget `json:"children,omitempty" yaml:"children"`
 
 	// Options widget
 	Options    []string `json:"options,omitempty" yaml:"options"`

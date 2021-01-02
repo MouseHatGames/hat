@@ -1,5 +1,9 @@
 <template lang="pug">
-HelloWorld(msg="Hello Vue 3.0 + Vite")
+Suspense
+    template(#default)
+        HelloWorld(msg="Hello Vue 3.0 + Vite")
+    template(#fallback)
+        h1 Loading
 </template>
 
 <script>

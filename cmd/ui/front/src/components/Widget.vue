@@ -18,7 +18,7 @@
 
     .card-content.is-flex-grow-1.is-flex.is-justify-content-center.is-align-items-center(v-else)
         //- On/Off button
-        OnOff(v-if="widget.type == 'onoff'" name="nice" v-model="widget.value" @update:modelValue="save")
+        OnOff(v-if="widget.type == 'onoff'" name="nice" v-model="value" @update:modelValue="save")
 
         //- Options
         .options-group(v-else-if="widget.type == 'options'")
@@ -29,19 +29,20 @@
 
             //- Many options - flex layout
             .many.is-flex.is-flex-wrap-wrap.is-justify-content-space-around(v-else)
-                button.button.mb-1(v-for="(opt, i) in widget.options" :class="{'is-info': i == widget.value}" @click="setValue(i)") {{opt}}
+                button.button.mb-1(v-for="(opt, i) in widget.options" :class="{'is-info': i == value}" @click="setValue(i)") {{opt}}
 
         //- Text fields (big and small)
         .field.has-addons(v-else-if="widget.type == 'text'" :class="{'w-100': widget.big}")
             //- Small field
-            input.input.mr-2(v-if="!widget.big" type="text" :placeholder="widget.placeholder" v-model="widget.value" @focusout="save")
+            input.input.mr-2(v-if="!widget.big" type="text" :placeholder="widget.placeholder" v-model="value" @focusout="save")
 
             //- Big field
-            textarea.input.mr-2.h-100.w-100(v-else v-model="widget.value" :placeholder="widget.placeholder" @focusout="save")
+            textarea.input.mr-2.h-100.w-100(v-else v-model="value" :placeholder="widget.placeholder" @focusout="save")
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import axios from 'axios'
+import { computed, defineComponent, inject, Ref } from 'vue'
 import OnOff from "./OnOff.vue"
 
 export default defineComponent({
@@ -49,19 +50,33 @@ export default defineComponent({
         OnOff
     },
     props: {
-        widget: Object
+        widget: Object,
+        path: String,
     },
-    setup(props) {
+    setup(props, { emit }) {
+        var data = inject<Ref<Record<string, any>>>("data")
+
+        const value = computed({
+            get: () => data.value[props.path],
+            set: val => data.value[props.path] = val
+        })
+        
         async function save() {
-            console.log("save")
+            console.log(value.value, data);
+            
+            await axios({
+                method: "post",
+                url: `/api/widget/${props.path}/value`,
+                data: JSON.stringify(value.value)
+            })
         }
 
         async function setValue(val: any) {
-            props.widget.value = val;
+            value.value = val
             await save();
         }
         
-        return { save, setValue }
+        return { save, setValue, value }
     }
 })
 </script>
