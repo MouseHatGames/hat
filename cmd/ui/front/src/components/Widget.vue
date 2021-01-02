@@ -1,5 +1,5 @@
 <template lang="pug">
-.tile.is-child.card.is-flex.is-flex-direction-column
+.tile.card.is-flex.is-flex-direction-column
     header.card-header
         p.card-header-title(:class="{'has-text-danger': failed}")
             span {{widget.title}}

@@ -3,7 +3,7 @@
     transition(name="fade")
         div(v-if="widgets")
             .tile.is-ancestor(v-for="row in widgets")
-                .tile.is-parent(v-for="(widget, path) in row")
+                .tile.is-parent(v-for="(widget, path) in row" :class="[widget.colspan > 1 && 'is-' + widget.colspan]")
                     Widget(:widget="widget" :path="path")
         template(v-else)
             progress.progress.is-small.is-dark.mt-5(v-if="!failed")
