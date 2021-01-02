@@ -1,7 +1,9 @@
 <template lang="pug">
 .tile.is-child.card.is-flex.is-flex-direction-column
     header.card-header
-        p.card-header-title(:class="{'has-text-danger': failed}") {{widget.title}}
+        p.card-header-title(:class="{'has-text-danger': failed}")
+            span {{widget.title}}
+            input.input.ml-3.is-small.is-param(type="text")
 
         .card-header-icon(v-if="widget.description")
             .dropdown.is-hoverable.is-right
@@ -119,7 +121,7 @@ textarea, input[type=text] {
 
     &:not(:focus) {
         background: transparent;
-        color: #f2f2f2;
+        color: #a8a8a8;
 
         & ~ button {
             display: none;
@@ -129,5 +131,9 @@ textarea, input[type=text] {
 
 .options-group {
     max-width: 300px;
+}
+
+.is-param {
+    max-width: 10rem;
 }
 </style>

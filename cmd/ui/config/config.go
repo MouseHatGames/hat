@@ -5,15 +5,15 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
-	"strings"
 
 	"github.com/MouseHatGames/hat-ui/widget"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Endpoint string                    `yaml:"endpoint"`
-	Widgets  map[string]*widget.Widget `yaml:"widgets"`
+	Endpoint    string                    `yaml:"endpoint"`
+	WidgetsNode yaml.Node                 `yaml:"widgets"`
+	Widgets     map[string]*widget.Widget `yaml:"-"`
 
 	Dashboard struct {
 		Columns int `yaml:"columns"`
@@ -39,11 +39,36 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("parse yaml: %w", err)
 	}
 
-	for p, v := range cfg.Widgets {
-		v.Path = p
+	cfg.Widgets, err = parseWidgets(cfg.WidgetsNode)
+	if err != nil {
+		return nil, fmt.Errorf("parse widgets: %w", err)
 	}
 
 	return &cfg, nil
+}
+
+func parseWidgets(node yaml.Node) (map[string]*widget.Widget, error) {
+	widgets := make(map[string]*widget.Widget)
+
+	i := 0
+	var path string
+	for _, node := range node.Content {
+		if node.Kind == yaml.ScalarNode {
+			path = node.Value
+		} else {
+			w := new(widget.Widget)
+			if err := node.Decode(w); err != nil {
+				return nil, fmt.Errorf("parse widget '%s': %w", path, err)
+			}
+
+			w.Index = i
+			w.Path = path
+			widgets[path] = w
+			i++
+		}
+	}
+
+	return widgets, nil
 }
 
 func (c *Config) OrderedWidgets() []*widget.Widget {
@@ -54,7 +79,7 @@ func (c *Config) OrderedWidgets() []*widget.Widget {
 	}
 
 	sort.Slice(all, func(i, j int) bool {
-		return strings.Compare(all[i].Path, all[j].Path) > 0
+		return all[i].Index < all[j].Index
 	})
 
 	return all

@@ -3,7 +3,6 @@ package widget
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 
 	"gopkg.in/yaml.v3"
@@ -31,7 +30,8 @@ const (
 
 type Widget struct {
 	// Used because map order is not preserved when marshalling to JSON
-	Path string `json:"path" yaml:"-"`
+	Path  string `json:"path" yaml:"-"`
+	Index int    `json:"-" yaml:"-"`
 
 	Title       string     `json:"title" yaml:"title"`
 	Type        WidgetType `json:"type" yaml:"type"`
@@ -63,7 +63,7 @@ func (w *Widget) UnmarshalYAML(value *yaml.Node) error {
 	*w = Widget(*widget)
 
 	if err := w.isValid(); err != nil {
-		return fmt.Errorf("invalid widget '%s': %w", w.Title, err)
+		return err
 	}
 
 	return nil
