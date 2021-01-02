@@ -10,8 +10,12 @@ import (
 )
 
 type Config struct {
-	Endpoint   string                      `yaml:"endpoint"`
-	WidgetRows []map[string]*widget.Widget `yaml:"widgets"`
+	Endpoint string                    `yaml:"endpoint"`
+	Widgets  map[string]*widget.Widget `yaml:"widgets"`
+
+	Dashboard struct {
+		Columns int `yaml:"columns"`
+	} `yaml:"dashboard"`
 }
 
 func Load(path string) (*Config, error) {
@@ -30,14 +34,6 @@ func Load(path string) (*Config, error) {
 
 	if err := yaml.Unmarshal(f, &cfg); err != nil {
 		return nil, fmt.Errorf("parse yaml: %w", err)
-	}
-
-	for _, row := range cfg.WidgetRows {
-		for _, w := range row {
-			if valid, err := w.IsValid(); !valid {
-				return nil, fmt.Errorf("widget '%s': %w", w.Title, err)
-			}
-		}
 	}
 
 	return &cfg, nil

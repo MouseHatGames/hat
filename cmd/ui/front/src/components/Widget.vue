@@ -1,7 +1,8 @@
 <template lang="pug">
 .tile.is-child.card.is-flex.is-flex-direction-column
     header.card-header
-        p.card-header-title {{widget.title}}
+        p.card-header-title(:class="{'has-text-danger': failed}") {{widget.title}}
+
         .card-header-icon(v-if="widget.description")
             .dropdown.is-hoverable.is-right
                 .dropdown-trigger
@@ -13,11 +14,13 @@
         .card-header-icon(v-if="failed")
             .dropdown.is-hoverable.is-right
                 .dropdown-trigger
-                    span.icon(style="color:red")
+                    span.icon.has-text-danger
                         icon(icon="times")
                     .dropdown-menu
                         .dropdown-content
-                            .dropdown-item There was an error submitting the changes to this value
+                            .dropdown-item
+                                | There was an error submitting the changes to this value.
+                                | Press 'r' to reload.
 
     .card-content.p-1.pt-2(v-if="widget.type == 'group'")
         .tile.is-ancestor

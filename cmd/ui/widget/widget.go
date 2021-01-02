@@ -3,7 +3,10 @@ package widget
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
+
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -29,6 +32,7 @@ type Widget struct {
 	Title       string     `json:"title" yaml:"title"`
 	Type        WidgetType `json:"type" yaml:"type"`
 	Description string     `json:"description,omitempty" yaml:"description"`
+	Colspan     int        `json:"colspan" yaml:"colspan"`
 
 	// Text widget
 	Placeholder string `json:"placeholder,omitempty" yaml:"placeholder"`
@@ -42,43 +46,62 @@ type Widget struct {
 	StoreIndex bool     `json:"-" yaml:"storeIndex"`
 }
 
-func (w *Widget) IsValid() (valid bool, reason error) {
+var _ yaml.Unmarshaler = (*Widget)(nil)
+
+func (w *Widget) UnmarshalYAML(value *yaml.Node) error {
+	type alias Widget
+	widget := &alias{Colspan: 1}
+
+	if err := value.Decode(widget); err != nil {
+		return err
+	}
+
+	*w = Widget(*widget)
+
+	if err := w.isValid(); err != nil {
+		return fmt.Errorf("invalid widget '%s': %w", w.Title, err)
+	}
+
+	return nil
+}
+
+func (w *Widget) isValid() (reason error) {
 	if w.Title == "" {
-		return false, ErrMissingTitle
+		return ErrMissingTitle
 	}
 
 	switch w.Type {
 	case WidgetOnOff:
 		if w.Placeholder != "" || w.Big || w.Children != nil || w.Options != nil {
-			return false, ErrInvalidOptions
+			return ErrInvalidOptions
 		}
 
 	case WidgetText:
 		if w.Children != nil || w.Options != nil {
-			return false, ErrInvalidOptions
+			return ErrInvalidOptions
 		}
 
 	case WidgetGroup:
 		if w.Options != nil || w.Placeholder != "" || w.Big {
-			return false, ErrInvalidOptions
+			return ErrInvalidOptions
 		}
 		if w.Children == nil {
-			return false, ErrMissingChildren
+			return ErrMissingChildren
 		}
 
 	case WidgetOptions:
 		if w.Placeholder != "" || w.Big || w.Children != nil {
-			return false, ErrInvalidOptions
+			return ErrInvalidOptions
 		}
 		if w.Options == nil {
-			return false, ErrMissingOptions
+			return ErrMissingOptions
 		}
 
 	default:
-		return false, ErrUnknownType
+		return ErrUnknownType
 	}
 
-	return true, nil
+	return nil
 }
 
 func (w *Widget) UnmarshalValue(str string) (value interface{}, err error) {

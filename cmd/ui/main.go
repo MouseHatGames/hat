@@ -26,29 +26,29 @@ func main() {
 	app := iris.New()
 	app.Get("/api/data", func(ctx iris.Context) {
 		resp := &struct {
-			Widgets []map[string]*widget.Widget `json:"widgets"`
-			Data    map[string]interface{}      `json:"data"`
+			Widgets map[string]*widget.Widget `json:"widgets"`
+			Columns int                       `json:"columns"`
+			Data    map[string]interface{}    `json:"data"`
 		}{
-			Widgets: cfg.WidgetRows,
+			Widgets: cfg.Widgets,
+			Columns: cfg.Dashboard.Columns,
 			Data:    make(map[string]interface{}),
 		}
 
-		for _, row := range cfg.WidgetRows {
-			for path, w := range row {
-				clvalue := hat.Get(client.SplitPath(path)...)
-				if err := clvalue.Error(); err != nil {
-					//TODO Handle error
-					continue
-				}
-
-				value, err := w.UnmarshalValue(clvalue.Raw())
-				if err != nil {
-					//TODO Handle error
-					continue
-				}
-
-				resp.Data[path] = value
+		for path, w := range cfg.Widgets {
+			clvalue := hat.Get(client.SplitPath(path)...)
+			if err := clvalue.Error(); err != nil {
+				//TODO Handle error
+				continue
 			}
+
+			value, err := w.UnmarshalValue(clvalue.Raw())
+			if err != nil {
+				//TODO Handle error
+				continue
+			}
+
+			resp.Data[path] = value
 		}
 
 		ctx.JSON(resp)

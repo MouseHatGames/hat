@@ -1,8 +1,12 @@
 <template lang="pug">
 .container
-    .tile.is-ancestor(v-for="row in widgets")
-        .tile.is-parent(v-for="(widget, path) in row")
-            Widget(:widget="widget" :path="path")
+    transition(name="fade")
+        div(v-if="widgets")
+            .tile.is-ancestor(v-for="row in widgets")
+                .tile.is-parent(v-for="(widget, path) in row")
+                    Widget(:widget="widget" :path="path")
+        template(v-else)
+            progress.progress.is-small.is-dark.mt-5
 </template>
 
 <script lang="ts">
@@ -10,6 +14,7 @@ import { computed, defineComponent, provide, reactive, ref } from "vue";
 import axios from "axios";
 import WidgetComponent from "./Widget.vue"
 import { Widget } from "../types/widget";
+import { onWindowKeyDown } from "../utils";
 
 type WidgetRow = { [path: string]: Widget };
 
@@ -21,14 +26,62 @@ export default defineComponent({
         const widgets = ref<WidgetRow[]>()
         const data = ref<Record<string, any>>()
         
-        axios.get("/api/data").then(resp => {
-            widgets.value = resp.data.widgets;
-            data.value = reactive(resp.data.data);
+        function refresh() {
+            widgets.value = null;
+            data.value = null;
+            
+            axios.get<{
+                widgets: WidgetRow
+                columns: number
+                data: any
+            }>("/api/data").then(resp => {
+                var rows: WidgetRow[] = []
+                var currentRow: WidgetRow = {}
+                var i = 0;
+
+                for (const path in resp.data.widgets) {
+                    const widget = resp.data.widgets[path];
+
+                    if (i++ == resp.data.columns) {
+                        rows.push(currentRow);
+                        currentRow = {};
+                    }
+
+                    currentRow[path] = widget;
+                }
+                rows.push(currentRow);
+
+                widgets.value = rows;
+                data.value = reactive(resp.data.data);
+            })
+        }
+        refresh();
+
+        onWindowKeyDown(ev => {
+            if (ev.key == "F5") {
+                ev.preventDefault();
+
+                refresh();
+            }
         })
-        
+
         provide("data", data)
 
         return { widgets }
     }
 })
 </script>
+
+<style lang="scss" scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+    position: absolute;
+    width: 100%;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
