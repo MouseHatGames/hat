@@ -38,6 +38,8 @@ type Widget struct {
 	Description string     `json:"description,omitempty" yaml:"description"`
 	Colspan     int        `json:"colspan" yaml:"colspan"`
 
+	ParamNames []string `json:"params,omitempty" yaml:"-"`
+
 	// Text widget
 	Placeholder string `json:"placeholder,omitempty" yaml:"placeholder"`
 	Big         bool   `json:"big,omitempty" yaml:"big"`

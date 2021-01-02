@@ -3,7 +3,7 @@
     header.card-header
         p.card-header-title(:class="{'has-text-danger': failed}")
             span {{widget.title}}
-            input.input.ml-3.is-small.is-param(type="text")
+            input.input.ml-3.is-small.is-param(v-for="param in widget.params" type="text" v-model="params[param]" :placeholder="param")
 
         .card-header-icon(v-if="widget.description")
             .dropdown.is-hoverable.is-right
@@ -22,7 +22,7 @@
                         .dropdown-content
                             .dropdown-item
                                 | There was an error submitting the changes.
-                                | Press 'r' to reload.
+                                | Press F5 to reload.
 
     .card-content.p-1.pt-2(v-if="widget.type == 'group'")
         .tile.is-ancestor
@@ -55,7 +55,7 @@
 
 <script lang="ts">
 import axios from 'axios'
-import { computed, defineComponent, inject, PropType, Ref, ref } from 'vue'
+import { computed, defineComponent, inject, PropType, Ref, ref, reactive } from 'vue'
 import { Widget } from '../types/widget'
 import OnOff from "./OnOff.vue"
 
@@ -70,6 +70,7 @@ export default defineComponent({
     setup(props, { emit }) {
         const data = inject<Ref<Record<string, any>>>("data")
         const failed = ref(false);
+        const params = props.widget.params && reactive(Object.fromEntries(props.widget.params.map(o => [o, null])))
 
         const value = computed({
             get: () => data.value[props.path],
@@ -80,10 +81,17 @@ export default defineComponent({
             failed.value = false;
 
             try {
+                console.log(params);
+                
+                if (params && Object.entries(params).some(o => o[1] === null)) {
+                    throw "empty parameter";
+                }
+
                 await axios({
                     method: "post",
                     url: `/api/widget/${props.path}/value`,
-                    data: JSON.stringify(value.value)
+                    data: JSON.stringify(value.value),
+                    params: params
                 })
             } catch (e) {
                 failed.value = true;
@@ -100,7 +108,7 @@ export default defineComponent({
             await save(oldValue);
         }
         
-        return { save, setValue, value, failed }
+        return { save, setValue, value, failed, params }
     }
 })
 </script>
@@ -125,6 +133,10 @@ textarea, input[type=text] {
 
         & ~ button {
             display: none;
+        }
+
+        &::placeholder {
+            color: #a8a8a8;
         }
     }
 }

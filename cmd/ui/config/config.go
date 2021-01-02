@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"sort"
 
 	"github.com/MouseHatGames/hat-ui/widget"
@@ -19,6 +20,8 @@ type Config struct {
 		Columns int `yaml:"columns"`
 	} `yaml:"dashboard"`
 }
+
+var paramRegex = regexp.MustCompile("{(.*?)}")
 
 func Load(path string) (*Config, error) {
 	f, err := ioutil.ReadFile(path)
@@ -59,6 +62,11 @@ func parseWidgets(node yaml.Node) (map[string]*widget.Widget, error) {
 			w := new(widget.Widget)
 			if err := node.Decode(w); err != nil {
 				return nil, fmt.Errorf("parse widget '%s': %w", path, err)
+			}
+
+			for _, m := range paramRegex.FindAllStringSubmatch(path, -1) {
+				name := m[1]
+				w.ParamNames = append(w.ParamNames, name)
 			}
 
 			w.Index = i

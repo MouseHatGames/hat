@@ -4,6 +4,7 @@ export interface WidgetBase {
     title: string;
     description?: string;
     path: string;
+    params?: string[];
 }
 
 export interface WidgetOnOff extends WidgetBase {

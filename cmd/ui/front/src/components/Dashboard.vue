@@ -6,7 +6,8 @@
                 .tile.is-parent(v-for="(widget, path) in row")
                     Widget(:widget="widget" :path="path")
         template(v-else)
-            progress.progress.is-small.is-dark.mt-5
+            progress.progress.is-small.is-dark.mt-5(v-if="!failed")
+            progress.progress.is-small.is-danger.mt-5(v-else value="100")
 </template>
 
 <script lang="ts">
@@ -23,10 +24,12 @@ export default defineComponent({
         Widget: WidgetComponent
     },
     setup() {
+        const failed = ref(false);
         const widgets = ref<Widget[][]>()
         const data = ref<Record<string, any>>()
         
         function refresh() {
+            failed.value = false;
             widgets.value = null;
             data.value = null;
             
@@ -51,6 +54,9 @@ export default defineComponent({
 
                 widgets.value = rows;
                 data.value = reactive(resp.data.data);
+            }).catch(e => {
+                console.error(e);
+                failed.value = true;
             })
         }
         refresh();
@@ -65,7 +71,7 @@ export default defineComponent({
 
         provide("data", data)
 
-        return { widgets }
+        return { widgets, failed }
     }
 })
 </script>
