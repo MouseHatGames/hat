@@ -10,7 +10,15 @@
                     .dropdown-menu
                         .dropdown-content
                             .dropdown-item {{widget.description}}
-    
+        .card-header-icon(v-if="failed")
+            .dropdown.is-hoverable.is-right
+                .dropdown-trigger
+                    span.icon(style="color:red")
+                        icon(icon="times")
+                    .dropdown-menu
+                        .dropdown-content
+                            .dropdown-item There was an error submitting the changes to this value
+
     .card-content.p-1.pt-2(v-if="widget.type == 'group'")
         .tile.is-ancestor
             .tile.is-parent(v-for="child in widget.children")
@@ -18,7 +26,7 @@
 
     .card-content.is-flex-grow-1.is-flex.is-justify-content-center.is-align-items-center(v-else)
         //- On/Off button
-        OnOff(v-if="widget.type == 'onoff'" name="nice" v-model="value" @update:modelValue="save")
+        OnOff(v-if="widget.type == 'onoff'" name="nice" :modelValue="value" @update:modelValue="setValue")
 
         //- Options
         .options-group(v-else-if="widget.type == 'options'")
@@ -34,15 +42,15 @@
         //- Text fields (big and small)
         .field.has-addons(v-else-if="widget.type == 'text'" :class="{'w-100': widget.big}")
             //- Small field
-            input.input.mr-2(v-if="!widget.big" type="text" :placeholder="widget.placeholder" v-model="value" @focusout="save")
+            input.input.mr-2(v-if="!widget.big" type="text" :placeholder="widget.placeholder" v-model="value" @focusout="save()")
 
             //- Big field
-            textarea.input.mr-2.h-100.w-100(v-else v-model="value" :placeholder="widget.placeholder" @focusout="save")
+            textarea.input.mr-2.h-100.w-100(v-else v-model="value" :placeholder="widget.placeholder" @focusout="save()")
 </template>
 
 <script lang="ts">
 import axios from 'axios'
-import { computed, defineComponent, inject, Ref } from 'vue'
+import { computed, defineComponent, inject, Ref, ref } from 'vue'
 import OnOff from "./OnOff.vue"
 
 export default defineComponent({
@@ -54,29 +62,39 @@ export default defineComponent({
         path: String,
     },
     setup(props, { emit }) {
-        var data = inject<Ref<Record<string, any>>>("data")
+        const data = inject<Ref<Record<string, any>>>("data")
+        const failed = ref(false);
 
         const value = computed({
             get: () => data.value[props.path],
             set: val => data.value[props.path] = val
         })
         
-        async function save() {
-            console.log(value.value, data);
-            
-            await axios({
-                method: "post",
-                url: `/api/widget/${props.path}/value`,
-                data: JSON.stringify(value.value)
-            })
+        async function save(oldValue?: any) {
+            failed.value = false;
+
+            try {
+                await axios({
+                    method: "post",
+                    url: `/api/widget/${props.path}/value`,
+                    data: JSON.stringify(value.value)
+                })
+            } catch (e) {
+                failed.value = true;
+
+                if (oldValue !== undefined)
+                    value.value = oldValue;
+            }
         }
 
         async function setValue(val: any) {
+            var oldValue = value.value;
             value.value = val
-            await save();
+
+            await save(oldValue);
         }
         
-        return { save, setValue, value }
+        return { save, setValue, value, failed }
     }
 })
 </script>
