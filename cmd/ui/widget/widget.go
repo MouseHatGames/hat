@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	ErrMissingType      = errors.New("missing type")
 	ErrMissingTitle     = errors.New("missing title")
 	ErrInvalidOptions   = errors.New("invalid options")
 	ErrMissingChildren  = errors.New("missing group children")
@@ -29,6 +30,9 @@ const (
 )
 
 type Widget struct {
+	// Used because map order is not preserved when marshalling to JSON
+	Path string `json:"path" yaml:"-"`
+
 	Title       string     `json:"title" yaml:"title"`
 	Type        WidgetType `json:"type" yaml:"type"`
 	Description string     `json:"description,omitempty" yaml:"description"`
@@ -65,9 +69,29 @@ func (w *Widget) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+func (w *Widget) guessType() WidgetType {
+	if w.Placeholder != "" || w.Big != false {
+		return WidgetText
+	} else if w.Children != nil {
+		return WidgetGroup
+	} else if w.Options != nil {
+		return WidgetOptions
+	}
+
+	return ""
+}
+
 func (w *Widget) isValid() (reason error) {
 	if w.Title == "" {
 		return ErrMissingTitle
+	}
+
+	if w.Type == "" {
+		if guess := w.guessType(); guess != "" {
+			w.Type = guess
+		} else {
+			return ErrMissingType
+		}
 	}
 
 	switch w.Type {

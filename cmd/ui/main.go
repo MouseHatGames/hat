@@ -26,13 +26,13 @@ func main() {
 	app := iris.New()
 	app.Get("/api/data", func(ctx iris.Context) {
 		resp := &struct {
-			Widgets map[string]*widget.Widget `json:"widgets"`
-			Columns int                       `json:"columns"`
-			Data    map[string]interface{}    `json:"data"`
+			Widgets []*widget.Widget       `json:"widgets"`
+			Columns int                    `json:"columns"`
+			Data    map[string]interface{} `json:"data"`
 		}{
-			Widgets: cfg.Widgets,
+			Widgets: cfg.OrderedWidgets(),
 			Columns: cfg.Dashboard.Columns,
-			Data:    make(map[string]interface{}),
+			Data:    make(map[string]interface{}, len(cfg.Widgets)),
 		}
 
 		for path, w := range cfg.Widgets {
@@ -69,6 +69,7 @@ func main() {
 
 		if err := hat.Set(string(body), client.SplitPath(path)...); err != nil {
 			ctx.StatusCode(iris.StatusInternalServerError)
+			log.Printf("failed to set value: %s", err)
 		}
 	})
 

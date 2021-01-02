@@ -19,7 +19,7 @@
                     .dropdown-menu
                         .dropdown-content
                             .dropdown-item
-                                | There was an error submitting the changes to this value.
+                                | There was an error submitting the changes.
                                 | Press 'r' to reload.
 
     .card-content.p-1.pt-2(v-if="widget.type == 'group'")

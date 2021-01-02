@@ -23,7 +23,7 @@ export default defineComponent({
         Widget: WidgetComponent
     },
     setup() {
-        const widgets = ref<WidgetRow[]>()
+        const widgets = ref<Widget[][]>()
         const data = ref<Record<string, any>>()
         
         function refresh() {
@@ -31,7 +31,7 @@ export default defineComponent({
             data.value = null;
             
             axios.get<{
-                widgets: WidgetRow
+                widgets: Widget[]
                 columns: number
                 data: any
             }>("/api/data").then(resp => {
@@ -39,15 +39,13 @@ export default defineComponent({
                 var currentRow: WidgetRow = {}
                 var i = 0;
 
-                for (const path in resp.data.widgets) {
-                    const widget = resp.data.widgets[path];
-
+                for (const widget of resp.data.widgets) {
                     if (i++ == resp.data.columns) {
                         rows.push(currentRow);
                         currentRow = {};
                     }
 
-                    currentRow[path] = widget;
+                    currentRow[widget.path] = widget;
                 }
                 rows.push(currentRow);
 

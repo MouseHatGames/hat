@@ -3,6 +3,7 @@ export type Widget = WidgetOnOff | WidgetText | WidgetGroup | WidgetOptions;
 export interface WidgetBase {
     title: string;
     description?: string;
+    path: string;
 }
 
 export interface WidgetOnOff extends WidgetBase {
