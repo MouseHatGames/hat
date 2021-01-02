@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/MouseHatGames/hat-ui/config"
@@ -60,7 +61,15 @@ func main() {
 			return
 		}
 
-		hat.Set(string(body), client.SplitPath(path)...)
+		var value interface{}
+		if err := json.Unmarshal(body, &value); err != nil {
+			ctx.StatusCode(iris.StatusBadRequest)
+			return
+		}
+
+		if err := hat.Set(string(body), client.SplitPath(path)...); err != nil {
+			ctx.StatusCode(iris.StatusInternalServerError)
+		}
 	})
 
 	app.HandleDir("/", "./dist", iris.DirOptions{

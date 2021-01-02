@@ -3,15 +3,17 @@ package widget
 import (
 	"encoding/json"
 	"errors"
+	"math"
 )
 
 var (
-	ErrMissingTitle    = errors.New("missing title")
-	ErrInvalidOptions  = errors.New("invalid options")
-	ErrMissingChildren = errors.New("missing group children")
-	ErrMissingOptions  = errors.New("missing options")
-	ErrUnknownType     = errors.New("unknown type")
-	ErrInvalidType     = errors.New("invalid type")
+	ErrMissingTitle     = errors.New("missing title")
+	ErrInvalidOptions   = errors.New("invalid options")
+	ErrMissingChildren  = errors.New("missing group children")
+	ErrMissingOptions   = errors.New("missing options")
+	ErrUnknownType      = errors.New("unknown type")
+	ErrInvalidType      = errors.New("invalid type")
+	ErrInvalidValueType = errors.New("invalid value type")
 )
 
 type WidgetType string
@@ -105,8 +107,38 @@ func (w *Widget) UnmarshalValue(str string) (value interface{}, err error) {
 		}
 
 	default:
-		err = ErrInvalidOptions
+		err = ErrInvalidType
 	}
 
 	return
+}
+
+func (w *Widget) MarshalValue(val interface{}) ([]byte, error) {
+	switch w.Type {
+	case WidgetOnOff:
+		if v, ok := val.(bool); ok {
+			return json.Marshal(v)
+		}
+
+	case WidgetText:
+		if v, ok := val.(string); ok {
+			return json.Marshal(v)
+		}
+
+	case WidgetOptions:
+		if w.StoreIndex {
+			if v, ok := val.(float64); ok {
+				return json.Marshal(math.Floor(v))
+			}
+		} else {
+			if v, ok := val.(string); ok {
+				return json.Marshal(v)
+			}
+		}
+
+	default:
+		return nil, ErrInvalidType
+	}
+
+	return nil, ErrInvalidValueType
 }
