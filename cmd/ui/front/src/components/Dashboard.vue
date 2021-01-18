@@ -55,7 +55,7 @@ export default defineComponent({
                 }
                 rows.push(currentRow);
 
-                widgets.value = rows;
+                widgets.value = rows.map(o => Object.values(o));
                 data.value = reactive(resp.data.data);
             }).catch(e => {
                 console.error(e);
