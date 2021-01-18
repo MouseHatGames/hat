@@ -20,7 +20,8 @@ type Config struct {
 	Widgets     map[string]*widget.Widget `yaml:"-"`
 
 	Dashboard struct {
-		Columns int `yaml:"columns"`
+		Columns int    `yaml:"columns"`
+		Title   string `yaml:"title"`
 	} `yaml:"dashboard"`
 }
 

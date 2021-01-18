@@ -38,10 +38,12 @@ func main() {
 		resp := &struct {
 			Widgets []*widget.Widget       `json:"widgets"`
 			Columns int                    `json:"columns"`
+			Title   string                 `json:"title"`
 			Data    map[string]interface{} `json:"data"`
 		}{
 			Widgets: cfg.OrderedWidgets(),
 			Columns: cfg.Dashboard.Columns,
+			Title:   cfg.Dashboard.Title,
 			Data:    make(map[string]interface{}, len(cfg.Widgets)),
 		}
 

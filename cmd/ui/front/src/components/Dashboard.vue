@@ -37,10 +37,13 @@ export default defineComponent({
                 widgets: Widget[]
                 columns: number
                 data: any
+                title: string
             }>("/api/data").then(resp => {
                 var rows: WidgetRow[] = []
                 var currentRow: WidgetRow = {}
                 var i = 0;
+
+                document.title = resp.data.title;
 
                 for (const widget of resp.data.widgets) {
                     if (i++ == resp.data.columns) {
