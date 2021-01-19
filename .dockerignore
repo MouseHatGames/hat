@@ -1,0 +1,6 @@
+.git
+**/testing
+**/dist
+**/node_modules
+Dockerfile
+bindata_gzip.go
