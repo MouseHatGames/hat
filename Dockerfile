@@ -1,7 +1,6 @@
 FROM golang:1.15.6-alpine3.12 AS go-builder
 WORKDIR /src/
 RUN apk --no-cache add upx git
-RUN go get -u github.com/kataras/bindata/cmd/bindata
 ENV GO111MODULE on
 
 COPY go.mod .
