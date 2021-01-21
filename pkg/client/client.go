@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/MouseHatGames/hat/internal/proto"
+	"github.com/MouseHatGames/hat/pkg/client/proto"
 	"google.golang.org/grpc"
 )
 
