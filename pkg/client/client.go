@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -13,9 +14,19 @@ import (
 type Client interface {
 	io.Closer
 
+	// Get fetches a value from the specified path.
 	Get(path ...string) Value
+
+	// GetBulk fetches multiple values from the store simultaneously.
 	GetBulk(paths [][]string) ([]Value, error)
-	Set(val string, path ...string) error
+
+	// Set converts a value into a JSON string and stores it.
+	Set(val interface{}, path ...string) error
+
+	// SetRaw stores a JSON-encoded value.
+	SetRaw(val string, path ...string) error
+
+	// Del deletes a value.
 	Del(path ...string) error
 }
 
@@ -75,7 +86,16 @@ func (c *client) GetBulk(paths [][]string) ([]Value, error) {
 	return values, nil
 }
 
-func (c *client) Set(val string, path ...string) error {
+func (c *client) Set(val interface{}, path ...string) error {
+	str, err := json.Marshal(val)
+	if err != nil {
+		return fmt.Errorf("json encode: %w", err)
+	}
+
+	return c.SetRaw(string(str), path...)
+}
+
+func (c *client) SetRaw(val string, path ...string) error {
 	_, err := c.cl.Set(context.Background(), &proto.SetRequest{
 		Path:  &proto.Path{Parts: path},
 		Value: &proto.Data{Json: val},
