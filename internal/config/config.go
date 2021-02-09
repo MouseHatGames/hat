@@ -9,12 +9,14 @@ import (
 )
 
 type Config struct {
-	Port int `yaml:"port"`
+	Port int        `yaml:"port"`
+	DataPath string `yaml:"dataPath"`
 }
 
 func LoadConfig(path string) (*Config, error) {
 	cfg := Config{
 		Port: 4659,
+		DataPath: "./data",
 	}
 
 	file, err := ioutil.ReadFile(path)
