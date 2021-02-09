@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/MouseHatGames/hat/internal/config"
 	"github.com/MouseHatGames/hat/internal/server"
@@ -18,7 +20,9 @@ func main() {
 		log.Fatalf("failed to load config: %s", err)
 	}
 
-	store, err := store.NewStore("store.db")
+	os.MkdirAll(config.DataPath, 0)
+
+	store, err := store.NewStore(filepath.Join(config.DataPath, "store.db"))
 	if err != nil {
 		log.Fatalf("failed to create store: %s", err)
 	}
