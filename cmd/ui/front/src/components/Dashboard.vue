@@ -3,15 +3,15 @@
     transition(name="fade")
         div(v-if="widgets")
             .tile.is-ancestor(v-for="row in widgets")
-                .tile.is-parent(v-for="(widget, path) in row" :class="[widget.colspan > 1 && 'is-' + widget.colspan]")
-                    Widget(:widget="widget" :path="path")
+                .tile.is-parent(v-for="widget in row" :class="[widget.colspan > 1 && 'is-' + widget.colspan]")
+                    Widget(:widget="widget" :path="widget.path")
         template(v-else)
             progress.progress.is-small.is-dark.mt-5(v-if="!failed")
             progress.progress.is-small.is-danger.mt-5(v-else value="100")
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide, reactive, ref } from "vue";
+import { defineComponent, provide, reactive, ref } from "vue";
 import axios from "axios";
 import WidgetComponent from "./Widget.vue"
 import { Widget } from "../types/widget";

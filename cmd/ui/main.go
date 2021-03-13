@@ -85,13 +85,13 @@ func main() {
 			return
 		}
 
-		mval, err := widget.MarshalValue(value)
+		mval, err := widget.TransformValue(value)
 		if err != nil {
 			ctx.StatusCode(iris.StatusBadRequest)
 			return
 		}
 
-		if err := hat.Set(string(mval), client.SplitPath(path)...); err != nil {
+		if err := hat.Set(mval, client.SplitPath(path)...); err != nil {
 			ctx.StatusCode(iris.StatusInternalServerError)
 			log.Printf("failed to set value: %s", err)
 		}

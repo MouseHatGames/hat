@@ -166,16 +166,16 @@ func (w *Widget) UnmarshalValue(jsonval []byte) (value interface{}, err error) {
 	return
 }
 
-func (w *Widget) MarshalValue(val interface{}) ([]byte, error) {
+func (w *Widget) TransformValue(val interface{}) (interface{}, error) {
 	switch w.Type {
 	case WidgetOnOff:
 		if v, ok := val.(bool); ok {
-			return json.Marshal(v)
+			return v, nil
 		}
 
 	case WidgetText:
 		if v, ok := val.(string); ok {
-			return json.Marshal(v)
+			return v, nil
 		}
 
 	case WidgetOptions:
@@ -184,10 +184,10 @@ func (w *Widget) MarshalValue(val interface{}) ([]byte, error) {
 			idx = int32(math.Floor(v))
 
 			if w.StoreIndex {
-				return json.Marshal(idx)
+				return idx, nil
 			}
 
-			return json.Marshal(w.Options[idx])
+			return w.Options[idx], nil
 		}
 
 	default:

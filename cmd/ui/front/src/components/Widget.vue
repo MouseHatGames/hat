@@ -2,7 +2,7 @@
 .tile.card.is-flex.is-flex-direction-column
     header.card-header
         p.card-header-title(:class="{'has-text-danger': failed}")
-            span {{widget.title}}
+            span(:title="path") {{widget.title}}
             input.input.ml-3.is-small.is-param(v-for="param in widget.params" type="text" v-model="params[param]" :placeholder="param")
 
         .card-header-icon(v-if="widget.description")
@@ -81,18 +81,13 @@ export default defineComponent({
             failed.value = false;
 
             try {
-                console.log(params);
-                
                 if (params && Object.entries(params).some(o => o[1] === null)) {
                     throw "empty parameter";
                 }
 
-                await axios({
-                    method: "post",
-                    url: `/api/widget/${props.path}/value`,
-                    data: JSON.stringify(value.value),
+                await axios.post(`/api/widget/${props.path}/value`, JSON.stringify(value.value), {
                     params: params
-                })
+                });
             } catch (e) {
                 failed.value = true;
 
