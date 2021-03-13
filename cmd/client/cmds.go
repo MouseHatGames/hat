@@ -39,7 +39,7 @@ type SetCmd struct {
 }
 
 func (c *SetCmd) Run(cl client.Client) error {
-	err := cl.Set(c.Value, c.PathParts()...)
+	err := cl.SetRaw(c.Value, c.PathParts()...)
 	if err != nil {
 		return err
 	}
