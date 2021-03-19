@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/MouseHatGames/hat/internal/proto"
 	"github.com/MouseHatGames/hat/internal/store"
@@ -25,6 +28,13 @@ func Start(port int, store store.Store) error {
 
 	sv := grpc.NewServer()
 	proto.RegisterHatServer(sv, &hatServer{store: store})
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		<-sig
+		sv.GracefulStop()
+	}()
 
 	if err := sv.Serve(lis); err != nil {
 		return fmt.Errorf("grpc serve: %w", err)

@@ -27,7 +27,7 @@ func main() {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
-	storePath := viper.GetString("StorePath")
+	storePath := viper.GetString("storePath")
 
 	os.MkdirAll(storePath, 0)
 
@@ -37,7 +37,7 @@ func main() {
 	}
 	defer store.Close()
 
-	if err := server.Start(viper.GetInt("Port"), store); err != nil {
+	if err := server.Start(viper.GetInt("port"), store); err != nil {
 		log.Fatalf("failed to start server: %s", err)
 	}
 }
