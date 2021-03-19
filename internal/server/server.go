@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 
-	"github.com/MouseHatGames/hat/internal/config"
 	"github.com/MouseHatGames/hat/internal/proto"
 	"github.com/MouseHatGames/hat/internal/store"
 	"google.golang.org/grpc"
@@ -14,8 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func Start(cfg *config.Config, store store.Store) error {
-	addr := fmt.Sprintf(":%d", cfg.Port)
+func Start(port int, store store.Store) error {
+	addr := fmt.Sprintf(":%d", port)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)
@@ -24,10 +23,10 @@ func Start(cfg *config.Config, store store.Store) error {
 
 	log.Printf("listening on %s", addr)
 
-	grpcServer := grpc.NewServer()
-	proto.RegisterHatServer(grpcServer, &hatServer{store: store})
+	sv := grpc.NewServer()
+	proto.RegisterHatServer(sv, &hatServer{store: store})
 
-	if err := grpcServer.Serve(lis); err != nil {
+	if err := sv.Serve(lis); err != nil {
 		return fmt.Errorf("grpc serve: %w", err)
 	}
 

@@ -1,34 +1,43 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/MouseHatGames/hat/internal/config"
 	"github.com/MouseHatGames/hat/internal/server"
 	"github.com/MouseHatGames/hat/internal/store"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	configPath := flag.String("config", "config.yaml", "")
-	flag.Parse()
+	viper.SetDefault("storePath", ".")
+	viper.SetDefault("port", "4659")
 
-	config, err := config.LoadConfig(*configPath)
-	if err != nil {
-		log.Fatalf("failed to load config: %s", err)
-	}
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 
-	os.MkdirAll(config.DataPath, 0)
+	viper.SetEnvPrefix("hat")
+	viper.AutomaticEnv()
 
-	store, err := store.NewStore(filepath.Join(config.DataPath, "store.db"))
+	pflag.String("storePath", ".", "folder inside which the data will be stored")
+	pflag.String("port", "4659", "port on which hat will listen")
+	pflag.Parse()
+	viper.BindPFlags(pflag.CommandLine)
+
+	storePath := viper.GetString("StorePath")
+
+	os.MkdirAll(storePath, 0)
+
+	store, err := store.NewStore(filepath.Join(storePath, "store.db"))
 	if err != nil {
 		log.Fatalf("failed to create store: %s", err)
 	}
 	defer store.Close()
 
-	if err := server.Start(config, store); err != nil {
+	if err := server.Start(viper.GetInt("Port"), store); err != nil {
 		log.Fatalf("failed to start server: %s", err)
 	}
 }

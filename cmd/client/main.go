@@ -9,7 +9,7 @@ import (
 )
 
 type Globals struct {
-	Endpoint string `short:"e" required help:"Endpoint of the hat server. For example: 127.0.0.1:4659" placeholder:"ADDR"`
+	Endpoint string `short:"e" default:"127.0.0.1:4659" help:"Endpoint of the hat server. For example: 127.0.0.1:4659" placeholder:"ADDR"`
 }
 
 type CLI struct {
