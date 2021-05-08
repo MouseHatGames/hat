@@ -48,13 +48,11 @@ type hatServer struct {
 	store store.Store
 }
 
-var empty = &proto.Empty{}
-
-func (s *hatServer) Set(ctx context.Context, req *proto.SetRequest) (*proto.Empty, error) {
+func (s *hatServer) Set(ctx context.Context, req *proto.SetRequest) (*proto.SetResponse, error) {
 	if err := s.store.Set(req.Path, req.Value.Json); err != nil {
 		return nil, err
 	}
-	return empty, nil
+	return &proto.SetResponse{}, nil
 }
 
 func (s *hatServer) Get(ctx context.Context, req *proto.Path) (*proto.Data, error) {
@@ -94,9 +92,9 @@ func (s *hatServer) GetBulk(ctx context.Context, req *proto.BulkRequest) (*proto
 	return resp, nil
 }
 
-func (s *hatServer) Delete(ctx context.Context, req *proto.Path) (*proto.Empty, error) {
+func (s *hatServer) Delete(ctx context.Context, req *proto.Path) (*proto.DeleteResponse, error) {
 	if err := s.store.Del(req); err != nil {
 		return nil, err
 	}
-	return empty, nil
+	return &proto.DeleteResponse{}, nil
 }

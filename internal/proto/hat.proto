@@ -1,11 +1,12 @@
 syntax = "proto3";
+package hat;
 option go_package = "github.com/MouseHatGames/hat/proto";
 
 service Hat {
     rpc Get(Path) returns (Data) {}
     rpc GetBulk(BulkRequest) returns (BulkResponse) {}
-    rpc Set(SetRequest) returns (Empty) {}
-    rpc Delete(Path) returns (Empty) {}
+    rpc Set(SetRequest) returns (SetResponse) {}
+    rpc Delete(Path) returns (DeleteResponse) {}
 }
 
 message Data {
@@ -16,7 +17,8 @@ message Path {
     repeated string parts = 1;
 }
 
-message Empty {}
+message SetResponse {}
+message DeleteResponse {}
 
 message SetRequest {
     Path path = 1;

@@ -19,8 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 type HatClient interface {
 	Get(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Data, error)
 	GetBulk(ctx context.Context, in *BulkRequest, opts ...grpc.CallOption) (*BulkResponse, error)
-	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Empty, error)
-	Delete(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Empty, error)
+	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
+	Delete(ctx context.Context, in *Path, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type hatClient struct {
@@ -33,7 +33,7 @@ func NewHatClient(cc grpc.ClientConnInterface) HatClient {
 
 func (c *hatClient) Get(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Data, error) {
 	out := new(Data)
-	err := c.cc.Invoke(ctx, "/Hat/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/hat.Hat/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,25 +42,25 @@ func (c *hatClient) Get(ctx context.Context, in *Path, opts ...grpc.CallOption) 
 
 func (c *hatClient) GetBulk(ctx context.Context, in *BulkRequest, opts ...grpc.CallOption) (*BulkResponse, error) {
 	out := new(BulkResponse)
-	err := c.cc.Invoke(ctx, "/Hat/GetBulk", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/hat.Hat/GetBulk", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hatClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Hat/Set", in, out, opts...)
+func (c *hatClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
+	out := new(SetResponse)
+	err := c.cc.Invoke(ctx, "/hat.Hat/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hatClient) Delete(ctx context.Context, in *Path, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Hat/Delete", in, out, opts...)
+func (c *hatClient) Delete(ctx context.Context, in *Path, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, "/hat.Hat/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +73,8 @@ func (c *hatClient) Delete(ctx context.Context, in *Path, opts ...grpc.CallOptio
 type HatServer interface {
 	Get(context.Context, *Path) (*Data, error)
 	GetBulk(context.Context, *BulkRequest) (*BulkResponse, error)
-	Set(context.Context, *SetRequest) (*Empty, error)
-	Delete(context.Context, *Path) (*Empty, error)
+	Set(context.Context, *SetRequest) (*SetResponse, error)
+	Delete(context.Context, *Path) (*DeleteResponse, error)
 	mustEmbedUnimplementedHatServer()
 }
 
@@ -88,10 +88,10 @@ func (UnimplementedHatServer) Get(context.Context, *Path) (*Data, error) {
 func (UnimplementedHatServer) GetBulk(context.Context, *BulkRequest) (*BulkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBulk not implemented")
 }
-func (UnimplementedHatServer) Set(context.Context, *SetRequest) (*Empty, error) {
+func (UnimplementedHatServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (UnimplementedHatServer) Delete(context.Context, *Path) (*Empty, error) {
+func (UnimplementedHatServer) Delete(context.Context, *Path) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedHatServer) mustEmbedUnimplementedHatServer() {}
@@ -117,7 +117,7 @@ func _Hat_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Hat/Get",
+		FullMethod: "/hat.Hat/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HatServer).Get(ctx, req.(*Path))
@@ -135,7 +135,7 @@ func _Hat_GetBulk_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Hat/GetBulk",
+		FullMethod: "/hat.Hat/GetBulk",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HatServer).GetBulk(ctx, req.(*BulkRequest))
@@ -153,7 +153,7 @@ func _Hat_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Hat/Set",
+		FullMethod: "/hat.Hat/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HatServer).Set(ctx, req.(*SetRequest))
@@ -171,7 +171,7 @@ func _Hat_Delete_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Hat/Delete",
+		FullMethod: "/hat.Hat/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HatServer).Delete(ctx, req.(*Path))
@@ -180,7 +180,7 @@ func _Hat_Delete_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 var _Hat_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "Hat",
+	ServiceName: "hat.Hat",
 	HandlerType: (*HatServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
