@@ -103,6 +103,8 @@ func importMap(m map[string]interface{}, prefix []string, cl client.Client) erro
 			}
 		}
 
+		fmt.Printf("set %s\n", strings.Join(path, "."))
+
 		err := cl.Set(v, path...)
 		if err != nil {
 			return fmt.Errorf("set value at %v: %w", path, err)
