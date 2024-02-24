@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/MouseHatGames/hat/pkg/client"
@@ -59,6 +60,53 @@ func (c *DelCmd) Run(cl client.Client) error {
 	err := cl.Del(c.PathParts()...)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+type ImportCmd struct {
+	JSONPath string `arg required help:"path to the json file to import"`
+	Root     string `short:"r" help:"path to import the file into"`
+}
+
+func (c *ImportCmd) Run(cl client.Client) error {
+	var data interface{}
+
+	root := strings.Split(c.Root, ".")
+
+	f, err := os.ReadFile(c.JSONPath)
+	if err != nil {
+		return fmt.Errorf("read file: %w", err)
+	}
+
+	if err := json.Unmarshal(f, &data); err != nil {
+		return fmt.Errorf("unmarshal json: %w", err)
+	}
+
+	m, ok := data.(map[string]interface{})
+	if !ok {
+		return errors.New("json file must be a dictionary")
+	}
+
+	return importMap(m, root, cl)
+}
+
+func importMap(m map[string]interface{}, prefix []string, cl client.Client) error {
+	for k, v := range m {
+		path := append(prefix, k)
+
+		if m, ok := v.(map[string]interface{}); ok {
+			err := importMap(m, path, cl)
+			if err != nil {
+				return fmt.Errorf("set map at %v: %w", path, err)
+			}
+		}
+
+		err := cl.Set(v, path...)
+		if err != nil {
+			return fmt.Errorf("set value at %v: %w", path, err)
+		}
 	}
 
 	return nil
