@@ -74,6 +74,9 @@ func (c *ImportCmd) Run(cl client.Client) error {
 	var data interface{}
 
 	root := strings.Split(c.Root, ".")
+	if len(root) == 1 && root[0] == c.Root {
+		root = nil
+	}
 
 	f, err := os.ReadFile(c.JSONPath)
 	if err != nil {
